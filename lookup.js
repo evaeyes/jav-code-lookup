@@ -22,7 +22,7 @@ const NOISE_NAMES = new Set(['ranking', 'actress', 'actresses', 'star', 'index',
 // 番号前缀：允许最多 3 位数字前缀 —— 200GANA / 300MIUM / 1START 这类
 // 字母段 2~7 位，数字段 1~6 位
 const P = '[0-9]{0,3}[A-Za-z]{2,7}';
-const RE_ID = new RegExp('[?&/](?:id|cid|content_id|product_id|movie_id)=([0-9]{0,3}[A-Za-z]{2,7}[0-9]{1,6})', 'g');
+const RE_ID = new RegExp('[?&/](?:id|cid|content_id|product_id|movie_id)=([A-Za-z0-9_]{2,26})', 'g');
 const RE_PATH = new RegExp('/([0-9]{0,3})([A-Za-z]{2,7})[-_]?([0-9]{2,6})(?:[-_/?#]|$)', 'g');
 const RE_DASH = new RegExp('\\b([0-9]{0,3}[A-Za-z]{2,7})-([0-9]{2,6})\\b', 'g');
 const RE_DASH_STRICT = /\b([A-Za-z]{2,7})-(\d{2,6})\b/;
@@ -152,16 +152,37 @@ export function codeVariants(code) {
 }
 
 /** 从 URL 里抠番号候选（按可能性排序）。DMM: ?id=1start00430；通用: /start-430 */
+/**
+ * DMM content id → 番号候选（id 有好几种词形）
+ *   prpm00002        → PRPM-002
+ *   1start00430      → START-430      （数字前缀，优先去掉）
+ *   h_1100hzgd00286  → HZGD-286       （h_ 后面那串数字是「片商编号」，不属于番号）
+ */
+export function codesFromId(raw) {
+  let v = String(raw || '').trim();
+  const isH = v.slice(0, 2).toLowerCase() === 'h_';
+  if (isH) v = v.slice(2);
+  const m = v.match(/^([0-9]{0,6})([A-Za-z]{2,7})([0-9]{1,7})$/);
+  if (!m) return [];
+  const digits = isH ? '' : m[1];
+  return codeCandidates(digits, m[2], m[3]).filter(okPrefix);
+}
+
+/** URL 里 id=/cid= 的原始值；解析不出番号时用来报错，别去正文瞎猜 */
+export function rawIdOf(url) {
+  const u = safeDecode(String(url || ''));
+  RE_ID.lastIndex = 0;
+  const m = RE_ID.exec(u);
+  return m ? m[1] : null;
+}
+
 export function codesFromUrl(url) {
   const u = safeDecode(String(url || ''));
   let m;
   RE_ID.lastIndex = 0;
   while ((m = RE_ID.exec(u))) {
-    const id = m[1].match(/^([0-9]{0,3})([A-Za-z]{2,7})([0-9]{1,6})$/);
-    if (id) {
-      const cs = codeCandidates(id[1], id[2], id[3]).filter(okPrefix);
-      if (cs.length) return cs;
-    }
+    const cs = codesFromId(m[1]);
+    if (cs.length) return cs;
   }
   RE_PATH.lastIndex = 0;
   while ((m = RE_PATH.exec(u))) {
@@ -368,8 +389,11 @@ export async function query(raw, log = () => {}) {
       out.hops = chain;
     }
     let codes = codesFromUrl(out.resolved);
-    if (!codes.length && /^https?:\/\//i.test(out.resolved)) {
-      // 只有真是网址才去抓页面找番号；像 "miad 984" 这种别当域名去 fetch（会报"域名不可达"误导人）
+    const rawId = rawIdOf(out.resolved);
+    if (rawId) out.dmmId = rawId;
+    if (!codes.length && !rawId && /^https?:\/\//i.test(out.resolved)) {
+      // 只有「不是 DMM 内容页」才去抓正文：有 id= 却解析不出时，正文里翻到的
+      // 多半是页面上推荐的无关番号（比如 age_check 页的榜单）
       try {
         const r = await fetchT(out.resolved, 15000);
         codes = codesFromText(await r.text());
@@ -383,6 +407,7 @@ export async function query(raw, log = () => {}) {
     out.code = codes[0] || null;
     if (!codes.length) {
       if (out.netError) out.error = '打不开 ' + out.resolved + '：' + out.netError;
+      else if (rawId) out.error = '识别不出番号：DMM id = ' + rawId + '（这个词形还没支持，请反馈）';
       else if (!/^https?:\/\//i.test(input)) out.error = '「' + input + '」既不是链接也不像番号（例：MIDA-984、miad 984）';
       else out.error = '这个页面里找不到番号（URL 和正文都没匹配上）';
       return out;

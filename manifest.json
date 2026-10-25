@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "番号查询 · JAV Code Lookup",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "粘贴 t.co / 推特 / FANZA 链接或番号，直接查出番号与女演员姓名。",
   "permissions": [
     "storage",
