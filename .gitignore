@@ -1,0 +1,19 @@
+# ---- 本机生成的东西，不进仓库 ----
+local-index.json
+local-index.json.tmp
+tools/com.hermes.javindex.json
+
+# ---- 常见噪声 ----
+__pycache__/
+*.py[cod]
+*.log
+.DS_Store
+Thumbs.db
+node_modules/
+.venv/
+venv/
+
+# ---- 编辑器 ----
+.vscode/
+.idea/
+*.swp

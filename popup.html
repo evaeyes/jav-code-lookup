@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="popup.css" />
+  <title>番号查询</title>
+</head>
+<body>
+  <header class="hd">
+    <span class="brand">JAV</span>
+    <h1>番号查询</h1>
+    <span id="netdot" class="dot" title="就绪"></span>
+  </header>
+
+  <div class="row">
+    <textarea id="q" rows="1" spellcheck="false"
+      placeholder="粘贴 t.co 短链 / 推特链接 / 番号，多行也可以"></textarea>
+    <button id="go" class="primary">查询</button>
+  </div>
+
+  <div class="hints">
+    <button class="hint" id="fromTab">用当前标签页</button>
+    <button class="hint" id="fromClip">读剪贴板</button>
+    <button class="hint" id="netcheck" title="测一下三个数据源能不能连上">网络自检</button>
+  </div>
+
+  <div id="status" class="status"></div>
+  <div id="results" class="results"></div>
+
+  <section class="recent">
+    <div class="recent-hd">
+      <span>最近查询</span>
+      <button id="clear" class="linkbtn">清空</button>
+    </div>
+    <div id="recentList" class="recent-list"></div>
+  </section>
+
+  <footer class="ft">
+    <div class="ft-line">
+      走系统代理 · 数据源 javbus / njavtv / missav
+      <span id="ver"></span>
+    </div>
+    <div class="ft-line">
+      <span class="ft-btns">
+        <button id="rescan" class="refresh" title="重新扫描本机影片目录、重建索引">⟳ 刷新本机库</button>
+        <button id="settingsBtn" class="refresh" title="设置要扫描的本机影片目录">⚙ 设置</button>
+      </span>
+      <span id="localState">本机影片索引：读取中…</span>
+    </div>
+    <div id="settings" class="settings" hidden>
+      <div class="set-lbl">本机影片目录（扫描根目录，番号取自「上一级文件夹名」）</div>
+      <div class="set-row">
+        <input id="libRoot" type="text" spellcheck="false" placeholder="H:\H\女优" />
+        <button id="saveRoot" class="mini">保存</button>
+        <button id="resetRoot" class="linkbtn">默认</button>
+      </div>
+      <div id="setStatus" class="set-status"></div>
+    </div>
+  </footer>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

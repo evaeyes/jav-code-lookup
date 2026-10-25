@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "番号查询 · JAV Code Lookup",
+  "version": "1.4.0",
+  "description": "粘贴 t.co / 推特 / FANZA 链接或番号，直接查出番号与女演员姓名。",
+  "permissions": [
+    "storage",
+    "tabs",
+    "contextMenus",
+    "clipboardRead",
+    "notifications",
+    "nativeMessaging"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "sw.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "番号查询（粘贴 t.co 短链）",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+J",
+        "mac": "Command+Shift+J"
+      },
+      "description": "打开番号查询"
+    }
+  }
+}
