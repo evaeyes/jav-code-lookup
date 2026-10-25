@@ -320,10 +320,11 @@ async function boot() {
   $('ver').textContent = 'v' + chrome.runtime.getManifest().version;
   renderRecent();
   // 本机影片索引：读完再补一次历史列表的「已下载」勾
-  loadLocalIndex().then(renderRecent);
-  // 自定义目录
+  await loadLocalIndex();
+  renderRecent();
+  // 自定义目录：用户设置 > 代码默认值 > 现有索引里记录的目录
   const st = await chrome.storage.local.get(LIB_ROOT_KEY);
-  libRoot = String((st && st[LIB_ROOT_KEY]) || '').trim() || DEFAULT_LIB_ROOT;
+  libRoot = String((st && st[LIB_ROOT_KEY]) || '').trim() || DEFAULT_LIB_ROOT || (LOCAL && LOCAL.root) || '';
   $('libRoot').value = libRoot;
 
   // 1) 右键菜单点过来的查询
